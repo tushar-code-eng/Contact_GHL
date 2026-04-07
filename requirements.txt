@@ -1,0 +1,9 @@
+# Core dependencies
+
+playwright==1.43.0
+requests==2.31.0
+python-dotenv==1.0.1
+
+# Optional (recommended for stability & parsing)
+
+urllib3>=1.26.0,<3

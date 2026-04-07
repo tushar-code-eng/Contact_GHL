@@ -1,0 +1,55 @@
+# 🔐 Environment variables
+
+.env
+
+# 🐍 Python cache / compiled files
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# 📦 Virtual environments
+
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# 📝 Logs
+
+logs/
+*.log
+
+# 💾 Data files (backups & processed data)
+
+data/backups/
+data/processed_ids.json
+
+# 🧪 Playwright artifacts (optional)
+
+playwright-report/
+test-results/
+
+# 🖥️ OS files
+
+.DS_Store
+Thumbs.db
+
+# 🧰 IDE / Editor settings
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 📦 Distribution / packaging
+
+build/
+dist/
+*.egg-info/
+
+# 🔒 Misc
+
+*.sqlite3
+*.db
