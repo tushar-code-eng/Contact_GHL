@@ -4,30 +4,45 @@ from logger import log, error
 from config import CONFIG
 
 def map_contact_to_ghl(contact):
-    """Map scraped contact data to GHL API format"""
+    """Map scraped contact data to GHL API format according to GHL schema"""
     # Split name into first and last (simple split on first space)
     name_parts = contact.get("name", "").split(" ", 1)
     first_name = name_parts[0] if name_parts else ""
     last_name = name_parts[1] if len(name_parts) > 1 else ""
 
     payload = {
+        # Required
+        "locationId": CONFIG["ghl_location_id"],
+        
+        # Core contact info
         "firstName": first_name,
         "lastName": last_name,
         "name": contact.get("name", ""),
         "email": contact.get("email", ""),
-        "locationId": CONFIG["ghl_location_id"],
         "phone": contact.get("phone", ""),
+        
+        # Address fields
         "address1": contact.get("address", ""),
+        
+        # Additional optional fields we can populate
         "source": "Contact Automation Script",
         "createNewIfDuplicateAllowed": False
     }
 
-    # Add optional fields if they exist
+    # Add tags if available
+    if contact.get("tag"):
+        payload["tags"] = [contact["tag"]]
+    
+    # Add status as additional info if available (optional)
     if contact.get("status"):
-        # You might want to add status as a tag or custom field
-        payload["tags"] = [contact["status"]]
+        if "tags" not in payload:
+            payload["tags"] = []
+        # Don't duplicate if tag already includes status
+        status_tag = f"{contact['status'].lower()}_tag"
+        if status_tag not in payload["tags"]:
+            payload["tags"].append(status_tag)
 
-    # Remove empty fields
+    # Remove null, empty string, and empty list values
     payload = {k: v for k, v in payload.items() if v not in [None, "", []]}
 
     return payload
