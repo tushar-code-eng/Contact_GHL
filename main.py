@@ -92,6 +92,35 @@ def filter_unique_rows(rows):
     return list(unique.values())
 
 
+def filter_unique_by_email_phone(rows):
+    """Filter unique records by email & phone combination"""
+    unique = {}
+
+    for row in rows:
+        email = (row.get("email") or "").strip().lower()
+        phone = re.sub(r"\D", "", row.get("phone") or "")
+        
+        # Skip if both email and phone are empty
+        if not email and not phone:
+            continue
+
+        key = (email, phone)
+        
+        # Keep only first occurrence of each email+phone combo
+        if key not in unique:
+            unique[key] = row
+
+    return list(unique.values())
+
+
+def add_tag_field(rows):
+    """Add tag field based on status (lowercase with _tag suffix)"""
+    for row in rows:
+        status = (row.get("status") or "").strip().lower()
+        row["tag"] = f"{status}_tag" if status else "unknown_tag"
+    return rows
+
+
 def cleanup_old_files():
     now = datetime.now()
 
@@ -116,23 +145,46 @@ def build_date_range():
     return start_date, end_date
 
 
+def load_latest_scrape():
+    """Load data from latest_scrape.json if it exists"""
+    if os.path.exists("data/latest_scrape.json"):
+        with open("data/latest_scrape.json", "r") as f:
+            return json.load(f)
+    return None
+
+
 def main():
     log("🚀 Starting script...")
 
     processed_ids = load_processed()
     new_processed = set(processed_ids)
-    start_date, end_date = build_date_range()
 
-    log(f"📅 Scraping range: {start_date} → {end_date}")
+    # Check if we should load from existing latest_scrape.json
+    load_from_file = os.getenv("LOAD_FROM_FILE", "false").lower() in ("1", "true", "yes")
+    
+    if load_from_file:
+        log("📂 Loading from latest_scrape.json...")
+        data = load_latest_scrape()
+        if not data:
+            log("❌ latest_scrape.json not found!")
+            return
+    else:
+        start_date, end_date = build_date_range()
+        log(f"📅 Scraping range: {start_date} → {end_date}")
+        data = scrape_all(start_date, end_date)
+        log(f"📊 Scraped {len(data)} rows")
+        save_backup(data)
+        save_last_date(end_date)
 
-    data = scrape_all(start_date, end_date)
-    log(f"📊 Scraped {len(data)} rows")
-
-    save_backup(data)
     save_local_list(data)
 
-    unique_rows = filter_unique_rows(data)
-    log(f"🔎 Reduced to {len(unique_rows)} unique rows by customer name + primary phone")
+    # Filter unique by email & phone
+    unique_rows = filter_unique_by_email_phone(data)
+    log(f"🔎 Filtered to {len(unique_rows)} unique rows by email + phone")
+
+    # Add tag field based on status
+    unique_rows = add_tag_field(unique_rows)
+    log(f"🏷️  Added tag field to {len(unique_rows)} records")
 
     if ENABLE_GHL_PUSH:
         contacts_to_send = []
@@ -153,10 +205,9 @@ def main():
     else:
         log("⏸️ GHL push is disabled. No contacts were sent.")
 
-    save_last_date(end_date)
     cleanup_old_files()
 
-    log(f"✅ Done. Found {len(unique_rows)} unique rows")
+    log(f"✅ Done. Processed {len(unique_rows)} unique rows")
 
 
 if __name__ == "__main__":
