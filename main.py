@@ -93,22 +93,33 @@ def filter_unique_rows(rows):
 
 
 def filter_unique_by_email_phone(rows):
-    """Filter unique records by email & phone combination"""
+    """Filter unique records by email (primary) or phone (fallback), keeping latest appointment"""
     unique = {}
 
     for row in rows:
         email = (row.get("email") or "").strip().lower()
         phone = re.sub(r"\D", "", row.get("phone") or "")
         
-        # Skip if both email and phone are empty
-        if not email and not phone:
-            continue
+        # Determine key: email if present, else phone
+        if email:
+            key = email
+        elif phone:
+            key = phone
+        else:
+            continue  # Skip if neither email nor phone
 
-        key = (email, phone)
+        candidate_date = parse_appointment_date(row.get("appointment"))
         
-        # Keep only first occurrence of each email+phone combo
         if key not in unique:
             unique[key] = row
+        else:
+            existing_date = parse_appointment_date(unique[key].get("appointment"))
+            if candidate_date and existing_date:
+                if candidate_date > existing_date:
+                    unique[key] = row
+            elif candidate_date and not existing_date:
+                unique[key] = row
+            # If candidate has no date, keep existing
 
     return list(unique.values())
 
@@ -190,10 +201,10 @@ def main():
         contacts_to_send = []
         for row in unique_rows:
             activity_id = row.get("activity_id")
-            if not is_new(activity_id, processed_ids):
-                contacts_to_send.append(row)
+            if is_new(activity_id, processed_ids):     # If new
+                contacts_to_send.append(row)           # Send it
                 new_processed.add(activity_id)
-            else:
+            else:                                      # If already processed
                 log(f"⏭️  Already processed: {row.get('name')} ({activity_id})")
 
         if contacts_to_send:

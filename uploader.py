@@ -33,14 +33,32 @@ def map_contact_to_ghl(contact):
     if contact.get("tag"):
         payload["tags"] = [contact["tag"]]
     
-    # Add status as additional info if available (optional)
+    # Add status as additional tag if available
     if contact.get("status"):
         if "tags" not in payload:
             payload["tags"] = []
-        # Don't duplicate if tag already includes status
         status_tag = f"{contact['status'].lower()}_tag"
         if status_tag not in payload["tags"]:
             payload["tags"].append(status_tag)
+
+    # Add additional details to GHL custom fields
+    custom_fields = []
+    for field_name in ["activity_id", "self_gen", "appointment", "quote_option", "is_primary", "contract_total"]:
+        value = contact.get(field_name)
+        if value is not None and value != "":
+            key = "appointment_date" if field_name == "appointment" else field_name
+            # Convert boolean values to strings for GHL
+            if isinstance(value, bool):
+                field_value = str(value).lower()
+            else:
+                field_value = str(value)
+            custom_fields.append({"key": key, "field_value": field_value})
+
+    if contact.get("status") not in [None, ""]:
+        custom_fields.append({"key": "status", "field_value": str(contact.get("status"))})
+
+    if custom_fields:
+        payload["customFields"] = custom_fields
 
     # Remove null, empty string, and empty list values
     payload = {k: v for k, v in payload.items() if v not in [None, "", []]}
