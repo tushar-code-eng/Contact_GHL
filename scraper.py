@@ -2,18 +2,62 @@ from playwright.sync_api import sync_playwright
 import re
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from logger import log
 from config import CONFIG
 
 SESSION_FILE = "auth.json"
+SESSION_MAX_AGE_HOURS = int(os.getenv("SESSION_MAX_AGE_HOURS", "6"))
 PROGRESS_SAVE_EVERY = int(os.getenv("PROGRESS_SAVE_EVERY", "15"))
 PROGRESS_BACKUP_DIR = "data/backups"
 PROGRESS_LAST_DATE_FILE = "data/last_date.json"
 PROGRESS_LATEST_SCRAPE = "data/latest_scrape.json"
 PLAYWRIGHT_TIMEOUT_MS = int(os.getenv("PLAYWRIGHT_TIMEOUT_MS", "120000"))
 DETAIL_SCRAPE_THREADS = int(os.getenv("DETAIL_SCRAPE_THREADS", "15"))
+
+
+def is_session_expired():
+    """Check if session file exists and is older than SESSION_MAX_AGE_HOURS"""
+    if not os.path.exists(SESSION_FILE):
+        return True  # No session, needs new one
+    
+    try:
+        file_age = datetime.now() - datetime.fromtimestamp(os.path.getmtime(SESSION_FILE))
+        max_age = timedelta(hours=SESSION_MAX_AGE_HOURS)
+        
+        if file_age > max_age:
+            log(f"⏰ Session is {file_age.total_seconds()/3600:.1f} hours old (max: {SESSION_MAX_AGE_HOURS}h)")
+            return True
+        else:
+            log(f"✅ Session is fresh ({file_age.total_seconds()/3600:.1f} hours old)")
+            return False
+    except Exception as e:
+        log(f"⚠️ Error checking session age: {e}")
+        return True
+
+
+def delete_expired_session():
+    """Delete the session file if it's expired"""
+    if is_session_expired() and os.path.exists(SESSION_FILE):
+        try:
+            os.remove(SESSION_FILE)
+            log(f"🗑️  Deleted expired session: {SESSION_FILE}")
+        except Exception as e:
+            log(f"❌ Error deleting session: {e}")
+
+
+def load_or_create_session(context, page):
+    """
+    Load existing session if fresh, or delete and create new one if expired
+    """
+    if is_session_expired():
+        delete_expired_session()
+        log("🔐 Creating new session...")
+        login_and_save_session(context, page)
+    else:
+        log("⚡ Using saved session")
+
 
 
 def normalize_phone(phone):
@@ -278,14 +322,15 @@ def scrape_all(start_date, end_date):
     field_config = load_field_config()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False)
 
-        if os.path.exists(SESSION_FILE):
+        # Check session age and create new one if expired
+        if not is_session_expired() and os.path.exists(SESSION_FILE):
             context = browser.new_context(storage_state=SESSION_FILE)
             log("⚡ Using saved session")
         else:
             context = browser.new_context()
-            log("🔐 No session found, logging in...")
+            log("🔐 Need to login (no session or expired)")
 
         page = context.new_page()
 
@@ -298,7 +343,9 @@ def scrape_all(start_date, end_date):
             # Older Playwright versions may not support these; ignore failures
             pass
 
-        if not os.path.exists(SESSION_FILE):
+        # Login if session is missing or expired
+        if is_session_expired():
+            delete_expired_session()
             login_and_save_session(context, page)
 
         report_url = build_report_url(start_date, end_date)
@@ -415,3 +462,138 @@ def scrape_all(start_date, end_date):
 
         browser.close()
         return results
+
+
+def extract_installation_rows(page):
+    """Extract installation data from the installations table"""
+    return page.evaluate(r"""
+        () => {
+            const rows = Array.from(document.querySelectorAll('tbody tr'));
+            console.log('Total rows found:', rows.length);
+            
+            const results = [];
+            
+            rows.forEach((tr, rowIdx) => {
+                const tds = Array.from(tr.querySelectorAll('td'));
+                const rowData = {};
+                
+                tds.forEach((td, cellIdx) => {
+                    const value = td.getAttribute('data-exp-value') || td.innerText.trim();
+                    rowData[cellIdx] = value;
+                });
+                
+                // Log first few rows to see structure
+                if (rowIdx < 3) {
+                    console.log(`Row ${rowIdx} cells:`, rowData);
+                }
+                
+                results.push(rowData);
+            });
+            
+            // Return raw cell data for inspection
+            return results.map(rowData => ({
+                cells: Object.values(rowData),
+                raw: rowData
+            }));
+        }
+    """)
+
+
+def scrape_installations(start_date=None, end_date=None):
+    """
+    Scrape installations from the upcoming installations URL
+    Filters for "Completed" order status only
+    Returns dict keyed by activity_id
+    """
+    installations = {}
+    
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+
+        # Check session age and create new one if expired
+        if not is_session_expired() and os.path.exists(SESSION_FILE):
+            context = browser.new_context(storage_state=SESSION_FILE)
+            log("⚡ Using saved session for installations")
+        else:
+            context = browser.new_context()
+            log("🔐 Session missing or expired, need to login for installations")
+            browser.close()
+            return installations
+
+        page = context.new_page()
+
+        try:
+            page.set_default_navigation_timeout(PLAYWRIGHT_TIMEOUT_MS)
+            page.set_default_timeout(PLAYWRIGHT_TIMEOUT_MS)
+        except Exception:
+            pass
+
+        try:
+            # Build URL with date range if provided
+            url = "https://prpt.todaysales.us/reports/salesrep/installations/upcoming"
+            if start_date and end_date:
+                # Convert dates to URL format (M/D/YYYY)
+                url += f"?repid=s507821&startdate={start_date}&enddate={end_date}"
+            else:
+                url += "?repid=s507821&startdate=1%2F4%2F2024&enddate=6%2F11%2F2026"
+            
+            log(f"📍 Navigating to installations URL...")
+            page.goto(url, wait_until="networkidle")
+            page.wait_for_timeout(2000)
+
+            # Extract rows
+            raw_rows = extract_installation_rows(page)
+            log(f"📊 Extracted {len(raw_rows)} installation records")
+
+            # Log first row structure for debugging
+            if raw_rows:
+                log(f"📋 First row cells: {raw_rows[0].get('cells', [])[:6]}")
+
+            # Filter for "Completed" status and deduplicate by activity_id (keep latest date)
+            for row in raw_rows:
+                cells = row.get('cells', [])
+                
+                # Based on table structure: [Installation Date, Order Id, Order Status, Contract Number, Opportunity Id, Activity Id, ...]
+                installation_date = cells[0] if len(cells) > 0 else ''
+                order_id = cells[1] if len(cells) > 1 else ''
+                order_status = cells[2] if len(cells) > 2 else ''
+                contract_number = cells[3] if len(cells) > 3 else ''
+                opportunity_id = cells[4] if len(cells) > 4 else ''
+                activity_id = cells[5] if len(cells) > 5 else ''
+
+                activity_id = (activity_id or '').strip()
+                order_status = (order_status or '').strip()
+                installation_date = (installation_date or '').strip()
+
+                # Only include if "Completed" is in the order status
+                if activity_id and "completed" in order_status.lower():
+                    new_row = {
+                        'activity_id': activity_id,
+                        'order_status': order_status,
+                        'installation_date': installation_date,
+                        'order_id': order_id,
+                        'contract_number': contract_number,
+                        'opportunity_id': opportunity_id
+                    }
+                    
+                    existing = installations.get(activity_id)
+                    if existing:
+                        # Keep the latest (max) installation date
+                        existing_date = parse_appointment_date(existing.get('installation_date', ''))
+                        new_date = parse_appointment_date(installation_date)
+                        if new_date and existing_date:
+                            if new_date > existing_date:
+                                installations[activity_id] = new_row
+                        elif new_date and not existing_date:
+                            installations[activity_id] = new_row
+                    else:
+                        installations[activity_id] = new_row
+
+            log(f"✅ Found {len(installations)} completed installations (deduped by activity_id)")
+            return installations
+
+        except Exception as e:
+            error(f"❌ Error scraping installations: {e}")
+            return installations
+        finally:
+            browser.close()
