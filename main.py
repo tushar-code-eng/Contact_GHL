@@ -532,23 +532,23 @@ def main():
             if activity_id in installations_dict:
                 updated_by_installation.add(activity_id)
         
-        # Collect records that meet criteria (newly scraped OR updated) AND have changed
+        # Collect records that have never been sent or whose content changed.
+        # This also allows previously deferred contacts to be retried.
         for row in final_data:
             activity_id = row.get("activity_id", "").strip()
-            is_newly_scraped = activity_id in newly_scraped_ids
-            is_updated = activity_id in updated_by_installation
             has_changed = has_record_changed(activity_id, row, processed_hashes)
-            
-            if (is_newly_scraped or is_updated) and has_changed:
+
+            if has_changed:
                 contacts_to_send.append(row)
-                reason = "newly scraped" if is_newly_scraped else "updated with installation"
+                if activity_id not in processed_hashes:
+                    reason = "unsent contact"
+                elif activity_id in updated_by_installation:
+                    reason = "updated with installation"
+                else:
+                    reason = "record changed"
                 log(f"✅ Marked for send: {row.get('name')} ({reason})")
-            elif (is_newly_scraped or is_updated) and not has_changed:
-                log(f"⏭️  Skipped (is updated but no changes detected): {row.get('name')} ({activity_id})")
-            elif not (is_newly_scraped or is_updated) and not has_changed:
-                log(f"⏭️  Skipped (not new, not updated): {row.get('name')} ({activity_id})")
-            elif not (is_newly_scraped or is_updated) and has_changed:
-                log(f"⏭️  Skipped (has changed but not newly scraped/updated): {row.get('name')} ({activity_id})")
+            else:
+                log(f"⏭️  Skipped unchanged already sent: {row.get('name')} ({activity_id})")
 
         # Apply per-tag limits if configured
         if contacts_to_send:
