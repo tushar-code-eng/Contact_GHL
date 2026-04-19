@@ -13,5 +13,9 @@
   "quote_option": true,
   "is_primary": true,
   "contract_total": true,
+  "area": true,
+  "product_line": true,
+  "series": true,
+  "style": true,
   "service_region": true
 }

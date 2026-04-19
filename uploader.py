@@ -43,13 +43,15 @@ def map_contact_to_ghl(contact):
 
     # Add additional details to GHL custom fields
     custom_fields = []
-    for field_name in ["activity_id", "self_gen", "appointment", "quote_option", "is_primary", "contract_total"]:
+    for field_name in ["activity_id", "self_gen", "appointment", "quote_option", "is_primary", "contract_total", "area", "product_line", "series", "style"]:
         value = contact.get(field_name)
         if value is not None and value != "":
             key = "appointment_date" if field_name == "appointment" else field_name
             # Convert boolean values to strings for GHL
             if isinstance(value, bool):
                 field_value = str(value).lower()
+            elif isinstance(value, list):
+                field_value = ", ".join(str(v) for v in value if v is not None)
             else:
                 field_value = str(value)
             custom_fields.append({"key": key, "field_value": field_value})

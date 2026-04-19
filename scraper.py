@@ -121,7 +121,7 @@ def scrape_detail(page, activity_id):
     page.goto(url)
     page.wait_for_timeout(2000)
 
-    return page.evaluate("""
+    return page.evaluate(r"""
         () => {
             function clean(v){ return (v||'').trim(); }
 
@@ -156,17 +156,22 @@ def scrape_detail(page, activity_id):
                     h.includes('contract total')
                 );
 
-                const rows = Array.from(document.querySelectorAll('tbody tr'));
+                const rows = Array.from(document.querySelectorAll('tbody > tr'));
 
                 for(const tr of rows){
+                    if(tr.classList.contains('collapse')) continue;
+
                     const tds = tr.querySelectorAll('td');
                     const isPrimaryValue = primaryIdx >= 0 ? getCellValue(tds[primaryIdx]).toLowerCase() : '';
+                    const button = tr.querySelector('button[data-toggle="collapse"]');
+                    const collapseTarget = button ? (button.dataset.target || button.getAttribute('data-target')) : '';
 
                     if(isPrimaryValue.includes('true')){
                         return {
                             quote_option: getCellValue(tds[quoteIdx]),
                             is_primary: getCellValue(tds[primaryIdx]),
-                            contract_total: getCellValue(tds[contractIdx])
+                            contract_total: getCellValue(tds[contractIdx]),
+                            collapse_target: collapseTarget
                         };
                     }
                 }
@@ -174,16 +179,72 @@ def scrape_detail(page, activity_id):
                 return {
                     quote_option: '',
                     is_primary: '',
-                    contract_total: ''
+                    contract_total: '',
+                    collapse_target: ''
+                };
+            }
+
+            function getQuoteDetailFields(targetSelector){
+                if(!targetSelector) {
+                    return {
+                        area: '',
+                        product_line: '',
+                        series: '',
+                        style: ''
+                    };
+                }
+
+                const collapseRow = document.querySelector(targetSelector);
+                if(!collapseRow) {
+                    return {
+                        area: '',
+                        product_line: '',
+                        series: '',
+                        style: ''
+                    };
+                }
+
+                const headers = Array.from(collapseRow.querySelectorAll('thead th'))
+                    .map(th => th.innerText.replace(/\s+/g,' ').trim().toLowerCase());
+                const areaIdx = headers.findIndex(h => h.includes('area'));
+                const productLineIdx = headers.findIndex(h => h.includes('product line') || h.includes('productline'));
+                const seriesIdx = headers.findIndex(h => h.includes('series'));
+                const styleIdx = headers.findIndex(h => h.includes('style'));
+
+                const rows = Array.from(collapseRow.querySelectorAll('table tbody tr'));
+                const areas = [];
+                const productLines = [];
+                const series = [];
+                const styles = [];
+
+                for(const tr of rows){
+                    const tds = tr.querySelectorAll('td');
+                    if(areaIdx >= 0) areas.push(getCellValue(tds[areaIdx]));
+                    if(productLineIdx >= 0) productLines.push(getCellValue(tds[productLineIdx]));
+                    if(seriesIdx >= 0) series.push(getCellValue(tds[seriesIdx]));
+                    if(styleIdx >= 0) styles.push(getCellValue(tds[styleIdx]));
+                }
+
+                return {
+                    area: areas.filter(Boolean).join(' | '),
+                    product_line: productLines.filter(Boolean).join(' | '),
+                    series: series.filter(Boolean).join(' | '),
+                    style: styles.filter(Boolean).join(' | ')
                 };
             }
 
             const primaryQuote = getPrimaryQuoteRow();
+            const quoteDetails = getQuoteDetailFields(primaryQuote.collapse_target);
+
             return {
                 email: getEmail(),
                 quote_option: primaryQuote.quote_option,
                 is_primary: primaryQuote.is_primary,
-                contract_total: primaryQuote.contract_total
+                contract_total: primaryQuote.contract_total,
+                area: quoteDetails.area,
+                product_line: quoteDetails.product_line,
+                series: quoteDetails.series,
+                style: quoteDetails.style
             };
         }
     """)
@@ -217,7 +278,7 @@ def login_and_save_session(context, page):
 
 
 def extract_rows(page):
-    return page.evaluate("""
+    return page.evaluate(r"""
         () => {
             const headers = Array.from(document.querySelectorAll('thead th'))
               .map(th => th.innerText.replace(/\s+/g, ' ').trim().toLowerCase());
