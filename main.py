@@ -363,6 +363,27 @@ def save_scheduled_records(records_dict):
     log(f"💾 Saved {len(records_list)} scheduled records to: {SCHEDULED_RECORDS_FILE}")
 
 
+def merge_scheduled_into_sales(sales_data, previous_scheduled):
+    """Append scheduled records into the current sales processing list."""
+    existing_ids = {
+        (row.get("activity_id") or "").strip()
+        for row in sales_data
+        if row.get("activity_id")
+    }
+    added_count = 0
+
+    for activity_id, scheduled_record in previous_scheduled.items():
+        if not activity_id:
+            continue
+        if activity_id not in existing_ids:
+            sales_data.append(scheduled_record)
+            existing_ids.add(activity_id)
+            added_count += 1
+            log(f"➕ Re-added scheduled record for processing: {activity_id}")
+
+    return sales_data, added_count
+
+
 def merge_new_with_accumulated(new_records, all_records_dict):
     """
     Merge new scraped records with accumulated records.
@@ -505,11 +526,17 @@ def main():
     # Save deduped sales
     save_deduped_sales(sales_data)
 
+    # Re-add previously scheduled activity IDs into processing so their current website status can be rechecked.
+    previous_scheduled = load_scheduled_records()
+    if previous_scheduled:
+        sales_data, readded = merge_scheduled_into_sales(sales_data, previous_scheduled)
+        if readded:
+            log(f"🔁 Re-added {readded} scheduled records into sales processing")
+
     # ============================================
     # STEP 2.5: UPDATE SCHEDULED RECORDS
     # ============================================
     log("\n📍 STEP 2.5: Updating scheduled records...")
-    previous_scheduled = load_scheduled_records()
     current_scheduled = {}
     status_changed_records = []
 
