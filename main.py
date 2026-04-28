@@ -283,26 +283,7 @@ def cleanup_old_files():
 
 def build_date_range():
     saved_end_date = load_last_date()
-    
-    # Check if there are scheduled records with earliest date
-    scheduled_records = load_scheduled_records()
-    earliest_scheduled_date = None
-    
-    if scheduled_records:
-        dates = []
-        for record in scheduled_records.values():
-            apt_date = parse_appointment_date(record.get("appointment"))
-            if apt_date:
-                dates.append(apt_date)
-        if dates:
-            earliest_scheduled_date = min(dates)
-            log(f"📅 Earliest scheduled appointment date: {format_query_date(earliest_scheduled_date)}")
-    
-    # Use earliest scheduled date if available, otherwise use normal logic
-    if earliest_scheduled_date:
-        start_date = format_query_date(earliest_scheduled_date)
-        log(f"🔄 Using earliest scheduled date as start_date: {start_date}")
-    elif os.getenv("FULL_LOAD", "false").lower() in ("1", "true", "yes") or not saved_end_date:
+    if os.getenv("FULL_LOAD", "false").lower() in ("1", "true", "yes") or not saved_end_date:
         start_date = "1/1/2024"
     else:
         start_date = saved_end_date
@@ -385,6 +366,52 @@ def save_scheduled_records(records_dict):
     with open(SCHEDULED_RECORDS_FILE, "w") as f:
         json.dump(records_list, f, indent=2)
     log(f"💾 Saved {len(records_list)} scheduled records to: {SCHEDULED_RECORDS_FILE}")
+
+
+def rescrape_scheduled_records():
+    """Re-scrape each scheduled record individually to get current status"""
+    from scraper import scrape_detail_parallel
+
+    scheduled_records = load_scheduled_records()
+    if not scheduled_records:
+        log("ℹ️ No scheduled records to re-scrape")
+        return
+
+    log(f"🔄 Re-scraping {len(scheduled_records)} scheduled records...")
+
+    updated_records = {}
+
+    for activity_id, old_record in scheduled_records.items():
+        try:
+            log(f"🔍 Re-scraping scheduled record: {activity_id} ({old_record.get('name', '')})")
+
+            # Scrape the detail page for this activity_id
+            detail = scrape_detail_parallel(activity_id)
+
+            if detail:
+                # Merge the fresh detail data with the existing record
+                updated_record = old_record.copy()
+                updated_record.update(detail)
+
+                # Re-scrape the summary data too (status, appointment, etc.)
+                # For now, we'll keep the old summary data and just update details
+                # The status will be updated when we do the normal scraping
+
+                updated_records[activity_id] = updated_record
+                log(f"✅ Updated scheduled record: {activity_id}")
+            else:
+                log(f"⚠️ Failed to scrape detail for: {activity_id}")
+                # Keep the old record if scraping failed
+                updated_records[activity_id] = old_record
+
+        except Exception as e:
+            log(f"❌ Error re-scraping {activity_id}: {e}")
+            # Keep the old record on error
+            updated_records[activity_id] = old_record
+
+    # Overwrite the scheduled records file with updated data
+    save_scheduled_records(updated_records)
+    log(f"💾 Overwrote scheduled_records.json with {len(updated_records)} updated records")
 
 
 def merge_new_with_accumulated(new_records, all_records_dict):
@@ -487,6 +514,12 @@ def main():
     new_processed_hashes = dict(processed_hashes)
 
     # ============================================
+    # STEP 0: RE-SCRAPE SCHEDULED RECORDS FIRST
+    # ============================================
+    log("\n📍 STEP 0: Re-scraping scheduled records...")
+    rescrape_scheduled_records()
+
+    # ============================================
     # STEP 1: SCRAPE & DEDUPE SALES DATA (URL 1)
     # ============================================
     log("\n📍 STEP 1: Scraping sales data from URL 1...")
@@ -530,7 +563,7 @@ def main():
     save_deduped_sales(sales_data)
 
     # ============================================
-    # STEP 3: SCRAPE & DEDUPE INSTALLATIONS (URL 2)
+    # STEP 2: SCRAPE & DEDUPE INSTALLATIONS (URL 2)
     # ============================================
     log("\n📍 STEP 2: Scraping installations from URL 2...")
     
