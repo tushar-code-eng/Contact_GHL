@@ -156,14 +156,19 @@ def parse_appointment_date(value):
     if not value:
         return None
 
+    # Extract just the date part (before any time info like "8 AM - 10 AM")
+    # Handle formats like "4/18/2026 8 AM - 10 AM" or "4/18/2026"
+    value_str = value.strip()
+    date_part = value_str.split(' ')[0]  # Get "4/18/2026" part
+
     for fmt in ["%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d", "%d-%b-%Y", "%m-%d-%Y"]:
         try:
-            return datetime.strptime(value.strip(), fmt)
+            return datetime.strptime(date_part, fmt)
         except ValueError:
             continue
 
     try:
-        return datetime.fromisoformat(value.strip())
+        return datetime.fromisoformat(date_part)
     except ValueError:
         return None
 
