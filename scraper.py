@@ -414,7 +414,19 @@ def scrape_all(start_date, end_date):
         log(f"🌐 Loading activity list: {report_url}")
 
         page.goto(report_url)
-        page.wait_for_selector("tbody tr")
+        
+        # Wait for table to load, but don't require tbody tr
+        try:
+            page.wait_for_selector("table", timeout=10000)
+            log("✅ Table loaded")
+        except:
+            log("⚠️ Table not found, proceeding anyway")
+        
+        # Check if there are any tbody tr, with short timeout
+        try:
+            page.wait_for_selector("tbody tr", timeout=2000)
+        except:
+            log("⚠️ No data rows found on page")
 
         # Scroll + collect for virtualized tables
         all_rows = []
@@ -601,6 +613,14 @@ def scrape_installations(start_date=None, end_date=None):
             
             log(f"📍 Navigating to installations URL...")
             page.goto(url, wait_until="networkidle")
+            
+            # Wait for table to load
+            try:
+                page.wait_for_selector("table", timeout=10000)
+                log("✅ Installations table loaded")
+            except:
+                log("⚠️ Installations table not found, proceeding anyway")
+            
             page.wait_for_timeout(2000)
 
             # Extract rows

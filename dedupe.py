@@ -8,8 +8,14 @@ PROCESSED_HASHES_FILE = "data/processed_hashes.json"
 def load_processed():
     if not os.path.exists(FILE):
         return set()
-    with open(FILE, "r") as f:
-        return set(json.load(f))
+    try:
+        with open(FILE, "r") as f:
+            content = f.read().strip()
+            if not content:
+                return set()
+            return set(json.loads(content))
+    except json.JSONDecodeError:
+        return set()
 
 def save_processed(ids):
     with open(FILE, "w") as f:

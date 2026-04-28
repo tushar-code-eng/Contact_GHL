@@ -18,6 +18,7 @@ DEDUPED_SALES_FILE = "data/deduped_sales.json"
 DEDUPED_INSTALLATIONS_FILE = "data/deduped_installations.json"
 MERGED_FINAL_FILE = "data/merged_final.json"
 ALL_RECORDS_FILE = "data/all_records.json"  # Accumulates all records from URL 1
+SCHEDULED_RECORDS_FILE = "data/scheduled_records.json"  # Tracks scheduled records separately
 ENABLE_GHL_PUSH = os.getenv("ENABLE_GHL_PUSH", "false").lower() in ("1", "true", "yes")
 os.makedirs(BACKUP_DIR, exist_ok=True)
 
@@ -340,6 +341,28 @@ def save_all_records(records_dict):
     log(f"💾 Saved {len(records_list)} accumulated records to: {ALL_RECORDS_FILE}")
 
 
+def load_scheduled_records():
+    """Load scheduled records from file"""
+    if not os.path.exists(SCHEDULED_RECORDS_FILE):
+        return {}
+    try:
+        with open(SCHEDULED_RECORDS_FILE, "r") as f:
+            records_list = json.load(f)
+            # Convert to dict keyed by activity_id
+            return {r['activity_id']: r for r in records_list}
+    except Exception as e:
+        log(f"❌ Error loading scheduled records: {e}")
+        return {}
+
+
+def save_scheduled_records(records_dict):
+    """Save scheduled records to file"""
+    records_list = list(records_dict.values())
+    with open(SCHEDULED_RECORDS_FILE, "w") as f:
+        json.dump(records_list, f, indent=2)
+    log(f"💾 Saved {len(records_list)} scheduled records to: {SCHEDULED_RECORDS_FILE}")
+
+
 def merge_new_with_accumulated(new_records, all_records_dict):
     """
     Merge new scraped records with accumulated records.
@@ -483,7 +506,33 @@ def main():
     save_deduped_sales(sales_data)
 
     # ============================================
-    # STEP 2: SCRAPE & DEDUPE INSTALLATIONS (URL 2)
+    # STEP 2.5: UPDATE SCHEDULED RECORDS
+    # ============================================
+    log("\n📍 STEP 2.5: Updating scheduled records...")
+    previous_scheduled = load_scheduled_records()
+    current_scheduled = {}
+    status_changed_records = []
+
+    for record in sales_data:
+        status = record.get('status', '').strip().lower()
+        activity_id = record.get('activity_id', '')
+
+        if status == 'scheduled':
+            current_scheduled[activity_id] = record
+        else:
+            # Check if it was previously scheduled
+            if activity_id in previous_scheduled:
+                prev_status = previous_scheduled[activity_id].get('status', '').strip().lower()
+                if prev_status == 'scheduled':
+                    status_changed_records.append(record)
+                    log(f"📅 Status changed from scheduled to {status}: {record.get('name')} ({activity_id})")
+
+    # Save updated scheduled records
+    save_scheduled_records(current_scheduled)
+    log(f"📋 {len(current_scheduled)} records still scheduled, {len(status_changed_records)} status changes detected")
+
+    # ============================================
+    # STEP 3: SCRAPE & DEDUPE INSTALLATIONS (URL 2)
     # ============================================
     log("\n📍 STEP 2: Scraping installations from URL 2...")
     
@@ -553,6 +602,12 @@ def main():
         # This also allows previously deferred contacts to be retried.
         for row in final_data:
             activity_id = row.get("activity_id", "").strip()
+            
+            # Skip scheduled records - they are not sent until status changes
+            if activity_id in current_scheduled:
+                log(f"⏸️  Skipping scheduled record: {row.get('name')} ({activity_id})")
+                continue
+            
             has_changed = has_record_changed(activity_id, row, processed_hashes)
 
             if has_changed:
