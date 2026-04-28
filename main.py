@@ -652,21 +652,39 @@ def main():
     save_merged_final(final_data)
 
     # ============================================
-    # STEP 4.5: ACCUMULATE SCHEDULED RECORDS
+    # STEP 4.5: EXTRACT SCHEDULED RECORDS FROM MERGED_FINAL.JSON
     # ============================================
-    log("\n📍 STEP 4.5: Accumulating scheduled records...")
-    scheduled_records_dict = {}
-    
-    for record in final_data:
+    log("\n📍 STEP 4.5: Extracting scheduled records from merged_final.json...")
+
+    # Load current merged_final.json
+    merged_final_file = "data/merged_final.json"
+    if os.path.exists(merged_final_file):
+        with open(merged_final_file, "r") as f:
+            all_merged_records = json.load(f)
+    else:
+        all_merged_records = []
+
+    # Separate scheduled vs non-scheduled records
+    scheduled_records = []
+    non_scheduled_records = []
+
+    for record in all_merged_records:
         status = record.get('status', '').strip().lower()
-        activity_id = record.get('activity_id', '')
-        
-        if status == 'scheduled' and activity_id:
-            scheduled_records_dict[activity_id] = record
-            log(f"📋 Added to scheduled: {record.get('name')} ({activity_id})")
-    
+        if status == 'scheduled':
+            scheduled_records.append(record)
+            log(f"📋 Extracted scheduled: {record.get('name')} ({record.get('activity_id')})")
+        else:
+            non_scheduled_records.append(record)
+
+    # Save updated merged_final.json (without scheduled records)
+    with open(merged_final_file, "w") as f:
+        json.dump(non_scheduled_records, f, indent=2)
+    log(f"💾 Updated merged_final.json: removed {len(scheduled_records)} scheduled records, kept {len(non_scheduled_records)}")
+
+    # Save scheduled records
+    scheduled_records_dict = {record['activity_id']: record for record in scheduled_records if record.get('activity_id')}
     save_scheduled_records(scheduled_records_dict)
-    log(f"💾 Saved {len(scheduled_records_dict)} scheduled records")
+    log(f"💾 Saved {len(scheduled_records_dict)} scheduled records to scheduled_records.json")
 
     # ============================================
     # STEP 5: SEND TO GHL
