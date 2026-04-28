@@ -369,8 +369,8 @@ def save_scheduled_records(records_dict):
 
 
 def rescrape_scheduled_records():
-    """Re-scrape each scheduled record individually to get current status"""
-    from scraper import scrape_detail_parallel
+    """Re-scrape each scheduled record individually to get current status and detail data"""
+    from scraper import scrape_detail_parallel, scrape_all
 
     scheduled_records = load_scheduled_records()
     if not scheduled_records:
@@ -379,30 +379,67 @@ def rescrape_scheduled_records():
 
     log(f"🔄 Re-scraping {len(scheduled_records)} scheduled records...")
 
+    # Get date range for scheduled records
+    dates = []
+    for record in scheduled_records.values():
+        apt_date = parse_appointment_date(record.get("appointment"))
+        if apt_date:
+            dates.append(apt_date)
+
+    if not dates:
+        log("⚠️ No valid dates found in scheduled records, skipping status update")
+        # Still do detail rescraping
+        dates = []
+
+    # Scrape the date range that contains all scheduled records to get current statuses
+    if dates:
+        min_date = min(dates)
+        max_date = max(dates)
+        start_date = format_query_date(min_date)
+        end_date = format_query_date(max_date)
+
+        log(f"📅 Scraping date range {start_date} to {end_date} for status updates")
+
+        try:
+            # Do a targeted scrape for the scheduled records' date range
+            status_data = scrape_all(start_date, end_date)
+            log(f"📊 Scraped {len(status_data)} records for status checking")
+
+            # Create lookup dict for status updates
+            status_lookup = {record.get('activity_id'): record for record in status_data if record.get('activity_id')}
+        except Exception as e:
+            log(f"❌ Failed to scrape for status updates: {e}")
+            status_lookup = {}
+    else:
+        status_lookup = {}
+
     updated_records = {}
 
     for activity_id, old_record in scheduled_records.items():
         try:
             log(f"🔍 Re-scraping scheduled record: {activity_id} ({old_record.get('name', '')})")
 
-            # Scrape the detail page for this activity_id
-            detail = scrape_detail_parallel(activity_id)
-
-            if detail:
-                # Merge the fresh detail data with the existing record
+            # Get updated status from the targeted scrape
+            current_record = status_lookup.get(activity_id)
+            if current_record:
+                # Update with current summary data (status, appointment, etc.)
+                updated_record = current_record.copy()
+                log(f"📋 Updated status to: {current_record.get('status', 'unknown')}")
+            else:
+                # Keep old record if not found in current scrape
                 updated_record = old_record.copy()
+                log(f"⚠️ Activity {activity_id} not found in current scrape, keeping old data")
+
+            # Scrape fresh detail data
+            detail = scrape_detail_parallel(activity_id)
+            if detail:
+                # Merge fresh detail data
                 updated_record.update(detail)
-
-                # Re-scrape the summary data too (status, appointment, etc.)
-                # For now, we'll keep the old summary data and just update details
-                # The status will be updated when we do the normal scraping
-
-                updated_records[activity_id] = updated_record
-                log(f"✅ Updated scheduled record: {activity_id}")
+                log(f"✅ Updated detail data for: {activity_id}")
             else:
                 log(f"⚠️ Failed to scrape detail for: {activity_id}")
-                # Keep the old record if scraping failed
-                updated_records[activity_id] = old_record
+
+            updated_records[activity_id] = updated_record
 
         except Exception as e:
             log(f"❌ Error re-scraping {activity_id}: {e}")
@@ -514,12 +551,6 @@ def main():
     new_processed_hashes = dict(processed_hashes)
 
     # ============================================
-    # STEP 0: RE-SCRAPE SCHEDULED RECORDS FIRST
-    # ============================================
-    log("\n📍 STEP 0: Re-scraping scheduled records...")
-    rescrape_scheduled_records()
-
-    # ============================================
     # STEP 1: SCRAPE & DEDUPE SALES DATA (URL 1)
     # ============================================
     log("\n📍 STEP 1: Scraping sales data from URL 1...")
@@ -561,6 +592,12 @@ def main():
     
     # Save deduped sales
     save_deduped_sales(sales_data)
+
+    # ============================================
+    # STEP 1.5: RE-SCRAPE SCHEDULED RECORDS (AFTER LOGIN)
+    # ============================================
+    log("\n📍 STEP 1.5: Re-scraping scheduled records...")
+    rescrape_scheduled_records()
 
     # ============================================
     # STEP 2: SCRAPE & DEDUPE INSTALLATIONS (URL 2)
