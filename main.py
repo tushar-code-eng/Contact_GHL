@@ -278,7 +278,26 @@ def cleanup_old_files():
 
 def build_date_range():
     saved_end_date = load_last_date()
-    if os.getenv("FULL_LOAD", "false").lower() in ("1", "true", "yes") or not saved_end_date:
+    
+    # Check if there are scheduled records with earliest date
+    scheduled_records = load_scheduled_records()
+    earliest_scheduled_date = None
+    
+    if scheduled_records:
+        dates = []
+        for record in scheduled_records.values():
+            apt_date = parse_appointment_date(record.get("appointment"))
+            if apt_date:
+                dates.append(apt_date)
+        if dates:
+            earliest_scheduled_date = min(dates)
+            log(f"📅 Earliest scheduled appointment date: {format_query_date(earliest_scheduled_date)}")
+    
+    # Use earliest scheduled date if available, otherwise use normal logic
+    if earliest_scheduled_date:
+        start_date = format_query_date(earliest_scheduled_date)
+        log(f"🔄 Using earliest scheduled date as start_date: {start_date}")
+    elif os.getenv("FULL_LOAD", "false").lower() in ("1", "true", "yes") or not saved_end_date:
         start_date = "1/1/2024"
     else:
         start_date = saved_end_date
@@ -361,27 +380,6 @@ def save_scheduled_records(records_dict):
     with open(SCHEDULED_RECORDS_FILE, "w") as f:
         json.dump(records_list, f, indent=2)
     log(f"💾 Saved {len(records_list)} scheduled records to: {SCHEDULED_RECORDS_FILE}")
-
-
-def merge_scheduled_into_sales(sales_data, previous_scheduled):
-    """Append scheduled records into the current sales processing list."""
-    existing_ids = {
-        (row.get("activity_id") or "").strip()
-        for row in sales_data
-        if row.get("activity_id")
-    }
-    added_count = 0
-
-    for activity_id, scheduled_record in previous_scheduled.items():
-        if not activity_id:
-            continue
-        if activity_id not in existing_ids:
-            sales_data.append(scheduled_record)
-            existing_ids.add(activity_id)
-            added_count += 1
-            log(f"➕ Re-added scheduled record for processing: {activity_id}")
-
-    return sales_data, added_count
 
 
 def merge_new_with_accumulated(new_records, all_records_dict):
@@ -526,38 +524,6 @@ def main():
     # Save deduped sales
     save_deduped_sales(sales_data)
 
-    # Re-add previously scheduled activity IDs into processing so their current website status can be rechecked.
-    previous_scheduled = load_scheduled_records()
-    if previous_scheduled:
-        sales_data, readded = merge_scheduled_into_sales(sales_data, previous_scheduled)
-        if readded:
-            log(f"🔁 Re-added {readded} scheduled records into sales processing")
-
-    # ============================================
-    # STEP 2.5: UPDATE SCHEDULED RECORDS
-    # ============================================
-    log("\n📍 STEP 2.5: Updating scheduled records...")
-    current_scheduled = {}
-    status_changed_records = []
-
-    for record in sales_data:
-        status = record.get('status', '').strip().lower()
-        activity_id = record.get('activity_id', '')
-
-        if status == 'scheduled':
-            current_scheduled[activity_id] = record
-        else:
-            # Check if it was previously scheduled
-            if activity_id in previous_scheduled:
-                prev_status = previous_scheduled[activity_id].get('status', '').strip().lower()
-                if prev_status == 'scheduled':
-                    status_changed_records.append(record)
-                    log(f"📅 Status changed from scheduled to {status}: {record.get('name')} ({activity_id})")
-
-    # Save updated scheduled records
-    save_scheduled_records(current_scheduled)
-    log(f"📋 {len(current_scheduled)} records still scheduled, {len(status_changed_records)} status changes detected")
-
     # ============================================
     # STEP 3: SCRAPE & DEDUPE INSTALLATIONS (URL 2)
     # ============================================
@@ -611,6 +577,23 @@ def main():
     save_merged_final(final_data)
 
     # ============================================
+    # STEP 4.5: ACCUMULATE SCHEDULED RECORDS
+    # ============================================
+    log("\n📍 STEP 4.5: Accumulating scheduled records...")
+    scheduled_records_dict = {}
+    
+    for record in final_data:
+        status = record.get('status', '').strip().lower()
+        activity_id = record.get('activity_id', '')
+        
+        if status == 'scheduled' and activity_id:
+            scheduled_records_dict[activity_id] = record
+            log(f"📋 Added to scheduled: {record.get('name')} ({activity_id})")
+    
+    save_scheduled_records(scheduled_records_dict)
+    log(f"💾 Saved {len(scheduled_records_dict)} scheduled records")
+
+    # ============================================
     # STEP 5: SEND TO GHL
     # ============================================
     log("\n📍 STEP 5: Sending to GHL...")
@@ -629,9 +612,10 @@ def main():
         # This also allows previously deferred contacts to be retried.
         for row in final_data:
             activity_id = row.get("activity_id", "").strip()
+            status = row.get("status", "").strip().lower()
             
             # Skip scheduled records - they are not sent until status changes
-            if activity_id in current_scheduled:
+            if status == "scheduled":
                 log(f"⏸️  Skipping scheduled record: {row.get('name')} ({activity_id})")
                 continue
             
