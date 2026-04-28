@@ -227,13 +227,25 @@ def filter_unique_by_email_phone(rows):
 
 
 def add_tag_field(rows):
-    """Add tag field based on status (lowercase with _tag suffix). Skip if tag already exists (from merge)"""
+    """Add tag field based on status. Supports multiple tags."""
     for row in rows:
-        # Skip if tag was already set (from installation merge)
+        # Skip if tag already exists (from installation merge)
         if row.get("tag"):
-            continue
-        status = (row.get("status") or "").strip().lower()
-        row["tag"] = f"{status}_tag" if status else "unknown_tag"
+            base_tag = row["tag"]
+        else:
+            status = (row.get("status") or "").strip().lower()
+            base_tag = f"{status}_tag" if status else "unknown_tag"
+
+        # Always convert to list
+        tags = [base_tag]
+
+        # 🔥 YOUR NEW LOGIC
+        if base_tag == "sold_tag":
+            tags.append("google_contact")
+
+        row["tags"] = tags  # use plural
+        row.pop("tag", None)  # optional: remove old single tag
+
     return rows
 
 
@@ -390,7 +402,12 @@ def apply_ghl_push_limits(contacts_to_send, max_records_config):
     # Group by tag
     by_tag = {}
     for contact in contacts_to_send:
-        tag = contact.get("tag", "unknown_tag")
+        tags = contact.get("tags", ["unknown_tag"])
+
+        for tag in tags:
+            if tag not in by_tag:
+                by_tag[tag] = []
+            by_tag[tag].append(contact)
         if tag not in by_tag:
             by_tag[tag] = []
         by_tag[tag].append(contact)

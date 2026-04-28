@@ -185,51 +185,52 @@ def scrape_detail(page, activity_id):
             }
 
             function getQuoteDetailFields(targetSelector){
-                if(!targetSelector) {
-                    return {
-                        area: '',
-                        product_line: '',
-                        series: '',
-                        style: ''
-                    };
-                }
+                const emptyResult = {
+                    area: '',
+                    product_line: '',
+                    series: '',
+                    style: ''
+                };
+
+                if(!targetSelector) return emptyResult;
 
                 const collapseRow = document.querySelector(targetSelector);
-                if(!collapseRow) {
-                    return {
-                        area: '',
-                        product_line: '',
-                        series: '',
-                        style: ''
-                    };
-                }
+                if(!collapseRow) return emptyResult;
 
-                const headers = Array.from(collapseRow.querySelectorAll('thead th'))
-                    .map(th => th.innerText.replace(/\s+/g,' ').trim().toLowerCase());
-                const areaIdx = headers.findIndex(h => h.includes('area'));
-                const productLineIdx = headers.findIndex(h => h.includes('product line') || h.includes('productline'));
-                const seriesIdx = headers.findIndex(h => h.includes('series'));
-                const styleIdx = headers.findIndex(h => h.includes('style'));
+                // Only use the direct rows of the summary table inside the collapse row.
+                // Ignore nested/detail rows from expanded sections.
+                const summaryRows = Array.from(
+                    collapseRow.querySelectorAll(':scope > td > table > tbody > tr')
+                );
 
-                const rows = Array.from(collapseRow.querySelectorAll('table tbody tr'));
                 const areas = [];
                 const productLines = [];
-                const series = [];
+                const seriesList = [];
                 const styles = [];
 
-                for(const tr of rows){
-                    const tds = tr.querySelectorAll('td');
-                    if(areaIdx >= 0) areas.push(getCellValue(tds[areaIdx]));
-                    if(productLineIdx >= 0) productLines.push(getCellValue(tds[productLineIdx]));
-                    if(seriesIdx >= 0) series.push(getCellValue(tds[seriesIdx]));
-                    if(styleIdx >= 0) styles.push(getCellValue(tds[styleIdx]));
+                for(const tr of summaryRows){
+                    const cells = Array.from(tr.querySelectorAll(':scope > td[data-exp-col]'));
+                    if(cells.length < 4) continue;
+
+                    const areaButton = cells[0].querySelector('button');
+                    const area = clean(areaButton ? areaButton.innerText : getCellValue(cells[0]));
+                    const productLine = clean(cells[1].dataset.expValue || cells[1].innerText);
+                    const series = clean(cells[2].dataset.expValue || cells[2].innerText);
+                    const style = clean(cells[3].dataset.expValue || cells[3].innerText);
+
+                    if(area) areas.push(area);
+                    if(productLine) productLines.push(productLine);
+                    if(series) seriesList.push(series);
+                    if(style) styles.push(style);
                 }
 
+                const unique = arr => [...new Set(arr.filter(Boolean))];
+
                 return {
-                    area: areas.filter(Boolean).join(' | '),
-                    product_line: productLines.filter(Boolean).join(' | '),
-                    series: series.filter(Boolean).join(' | '),
-                    style: styles.filter(Boolean).join(' | ')
+                    area: unique(areas).join(' | '),
+                    product_line: unique(productLines).join(' | '),
+                    series: unique(seriesList).join(' | '),
+                    style: unique(styles).join(' | ')
                 };
             }
 

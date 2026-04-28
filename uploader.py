@@ -30,7 +30,9 @@ def map_contact_to_ghl(contact):
     }
 
     # Add tags if available
-    if contact.get("tag"):
+    if contact.get("tags"):
+        payload["tags"] = list(contact["tags"])
+    elif contact.get("tag"):
         payload["tags"] = [contact["tag"]]
     
     # Add status as additional tag if available
