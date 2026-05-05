@@ -93,8 +93,8 @@
   {
     "activity_id": "1-8464670209",
     "self_gen": false,
-    "appointment": "4/14/2026 3 PM - 5 PM",
-    "status": "Sold",
+    "appointment": "4/28/2026",
+    "status": "completed",
     "contract_number": "005TAEE195",
     "name": "Donna Hordendorf",
     "phone": "6104136371",
@@ -105,8 +105,7 @@
     "is_primary": "True",
     "contract_total": "$4,835.05",
     "tags": [
-      "sold_tag",
-      "google_contact"
+      "recent_tag"
     ]
   },
   {
@@ -237,22 +236,25 @@
     ]
   },
   {
-    "activity_id": "1-8470622960",
+    "activity_id": "1-8478496925",
     "self_gen": false,
-    "appointment": "4/11/2026 9 AM - 11 AM",
-    "status": "Sold",
-    "contract_number": "005TAEE116",
-    "name": "TERRI ROGERS",
+    "appointment": "4/22/2026",
+    "status": "completed",
+    "contract_number": "005TAEE311",
+    "name": "Terri Rogers",
     "phone": "6105731421",
     "alternate_phone": "",
     "address": "234 E SMITH ST Topton, PA 19562",
     "email": "terrrog@hotmail.com",
-    "quote_option": "Quote B",
+    "quote_option": "Quote E",
     "is_primary": "True",
-    "contract_total": "$5,190.59",
+    "contract_total": "$3,765.11",
+    "area": "Kitchen",
+    "product_line": "LVT",
+    "series": "Options",
+    "style": "Beige",
     "tags": [
-      "sold_tag",
-      "google_contact"
+      "recent_tag"
     ]
   },
   {
@@ -330,8 +332,8 @@
   {
     "activity_id": "1-8468222955",
     "self_gen": true,
-    "appointment": "4/8/2026 3 PM - 5 PM",
-    "status": "Quoted",
+    "appointment": "4/25/2026",
+    "status": "completed",
     "contract_number": "",
     "name": "Michele Bria",
     "phone": "6107641754",
@@ -342,7 +344,7 @@
     "is_primary": "True",
     "contract_total": "$22,447.35",
     "tags": [
-      "quoted_tag"
+      "recent_tag"
     ]
   },
   {
@@ -744,7 +746,7 @@
   {
     "activity_id": "1-8461767829",
     "self_gen": false,
-    "appointment": "4/20/2026",
+    "appointment": "4/28/2026",
     "status": "completed",
     "contract_number": "005TAED840",
     "name": "Linda Harris",
@@ -1122,8 +1124,8 @@
   {
     "activity_id": "1-8451019800",
     "self_gen": false,
-    "appointment": "3/21/2026 9 AM - 11 AM",
-    "status": "Sold",
+    "appointment": "4/30/2026",
+    "status": "completed",
     "contract_number": "005TAED644",
     "name": "Sandra Mclain",
     "phone": "2152807351",
@@ -1134,8 +1136,7 @@
     "is_primary": "True",
     "contract_total": "$5,478.17",
     "tags": [
-      "sold_tag",
-      "google_contact"
+      "recent_tag"
     ]
   },
   {
@@ -1249,8 +1250,8 @@
   {
     "activity_id": "1-8442891820",
     "self_gen": false,
-    "appointment": "3/18/2026 9 AM - 11 AM",
-    "status": "Sold",
+    "appointment": "4/30/2026",
+    "status": "completed",
     "contract_number": "005TAED585",
     "name": "Pam Caprio",
     "phone": "2154502459",
@@ -1261,8 +1262,7 @@
     "is_primary": "True",
     "contract_total": "$6,527.64",
     "tags": [
-      "sold_tag",
-      "google_contact"
+      "recent_tag"
     ]
   },
   {
@@ -14259,24 +14259,6 @@
     ]
   },
   {
-    "activity_id": "1-7947366085",
-    "self_gen": true,
-    "appointment": "12/7/2024 4 PM - 6 PM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Minnie Sethi",
-    "phone": "6105334520",
-    "alternate_phone": "",
-    "address": "2380 Raya Way Easton, PA 18045",
-    "email": "",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
     "activity_id": "1-7946051328",
     "self_gen": false,
     "appointment": "12/7/2024 1 PM - 3 PM",
@@ -15197,21 +15179,25 @@
     ]
   },
   {
-    "activity_id": "1-7907375189",
+    "activity_id": "1-8477480885",
     "self_gen": true,
-    "appointment": "11/12/2024",
-    "status": "completed",
-    "contract_number": "005TADU067",
+    "appointment": "4/18/2026 8 AM - 10 AM",
+    "status": "Quoted",
+    "contract_number": "",
     "name": "Cindy Amato",
     "phone": "9174001778",
     "alternate_phone": "",
     "address": "2611 W. Greenleaf St Allentown, PA 18104",
     "email": "amato.cindy@yahoo.com",
-    "quote_option": "Quote B",
+    "quote_option": "Quote C",
     "is_primary": "True",
-    "contract_total": "$4,394.50",
+    "contract_total": "$3,620.12",
+    "area": "Basement | Staircase",
+    "product_line": "LVP | Carpet",
+    "series": "Brampton Hills Floating | Coral Dunes",
+    "style": "Stone Mill | Grey Tweed",
     "tags": [
-      "recent_tag"
+      "quoted_tag"
     ]
   },
   {
@@ -16840,24 +16826,6 @@
     "contract_total": "$4,014.84",
     "tags": [
       "quoted_tag"
-    ]
-  },
-  {
-    "activity_id": "1-7821850850",
-    "self_gen": false,
-    "appointment": "10/8/2024",
-    "status": "completed",
-    "contract_number": "005TADT245",
-    "name": "Brandon Hill",
-    "phone": "2672733470",
-    "alternate_phone": "",
-    "address": "531 Charles St Coopersburg, PA 18036",
-    "email": "bchill24@gmail.com",
-    "quote_option": "Quote G",
-    "is_primary": "True",
-    "contract_total": "$5,391.65",
-    "tags": [
-      "recent_tag"
     ]
   },
   {
@@ -24002,78 +23970,6 @@
     ]
   },
   {
-    "activity_id": "1-8477480885",
-    "self_gen": false,
-    "appointment": "4/18/2026 8 AM - 10 AM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Cindy Amato",
-    "phone": "9174001778",
-    "alternate_phone": "",
-    "address": "2611 W. Greenleaf St Allentown, PA 18104",
-    "email": "",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
-    "activity_id": "1-8473872798",
-    "self_gen": false,
-    "appointment": "4/18/2026 9 AM - 11 AM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Margarita Diaz",
-    "phone": "4846648960",
-    "alternate_phone": "",
-    "address": "1849 Shadt Ave Whitehall, PA 18052",
-    "email": "",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
-    "activity_id": "1-8473458819",
-    "self_gen": false,
-    "appointment": "4/18/2026 11 AM - 1 PM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Nic Mckay",
-    "phone": "4843254624",
-    "alternate_phone": "",
-    "address": "439 Second Ave Royersford, PA 19468",
-    "email": "",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
-    "activity_id": "1-8477506595",
-    "self_gen": false,
-    "appointment": "4/20/2026 3 PM - 5 PM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Charlie Pierce",
-    "phone": "6109604488",
-    "alternate_phone": "",
-    "address": "260 West Beech St Pottstown, PA 19464",
-    "email": "",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
     "activity_id": "1-8477795118",
     "self_gen": false,
     "appointment": "4/18/2026 9 AM - 11 AM",
@@ -24092,9 +23988,9 @@
     ]
   },
   {
-    "activity_id": "1-8473872798",
+    "activity_id": "1-8480470705",
     "self_gen": false,
-    "appointment": "4/18/2026 9 AM - 11 AM",
+    "appointment": "4/21/2026 10 AM - 12 PM",
     "status": "Quoted",
     "contract_number": "",
     "name": "Margarita Diaz",
@@ -24104,7 +24000,11 @@
     "email": "margamad1949@gmail.com",
     "quote_option": "Quote F",
     "is_primary": "True",
-    "contract_total": "$9,420.61",
+    "contract_total": "$6,534.75",
+    "area": "Dining Room | Family Room | Foyer | Hallway",
+    "product_line": "Laminate",
+    "series": "Collin Creek",
+    "style": "Gunstock",
     "tags": [
       "quoted_tag"
     ]
@@ -24131,16 +24031,15 @@
   {
     "activity_id": "1-8479475780",
     "self_gen": false,
-    "appointment": "4/21/2026 3 PM - 5 PM",
-    "status": "Sold",
+    "appointment": "4/23/2026",
+    "status": "completed",
     "contract_number": "005TAEE387",
     "name": "DAVID MUTHARD",
     "phone": "6104228082",
     "alternate_phone": "6104228082",
     "address": "3743 Mangroove Dr Northampton, PA 18067",
     "tags": [
-      "sold_tag",
-      "google_contact"
+      "recent_tag"
     ]
   },
   {
@@ -24186,32 +24085,10 @@
     ]
   },
   {
-    "activity_id": "1-8480047746",
-    "self_gen": false,
-    "appointment": "4/22/2026 11 AM - 1 PM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Jasmine Jones",
-    "phone": "9732869208",
-    "alternate_phone": "",
-    "address": "18 White Rose Ln Easton, PA 18045",
-    "email": "goddessjasmin26@aol.com",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "area": "",
-    "product_line": "",
-    "series": "",
-    "style": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
     "activity_id": "1-8479475780",
     "self_gen": false,
-    "appointment": "4/21/2026 3 PM - 5 PM",
-    "status": "Sold",
+    "appointment": "4/23/2026",
+    "status": "completed",
     "contract_number": "005TAEE387",
     "name": "DAVID MUTHARD",
     "phone": "6104228082",
@@ -24226,8 +24103,7 @@
     "series": "Amur Bay | Embossing Leveler | Planiprep PSC | No | No | Floating - Click Lock | No | No | Yes | Standard Furniture (Up to 200 lb ea, 8 Items per room) | Take Up Floating Hardwood/Laminate/LVP | Amur Bay | Embossing Leveler | Planiprep PSC | No | No | Floating - Click Lock | No | No | Yes | Standard Furniture (Up to 200 lb ea, 8 Items per room) | Take Up Carpet Over Pad | Amur Bay | Embossing Leveler | Planiprep PSC | No | No | Floating - Click Lock | No | No | No | Appliance Move (Installer may not reconnect water/gas) | Standard Furniture (Up to 200 lb ea, 8 Items per room) | Flatten floor greater than 1/8 inch | No Take Up | Amur Bay | Embossing Leveler | Planiprep PSC | No | No | Floating - Click Lock | No | No | Yes | Standard Furniture (Up to 200 lb ea, 8 Items per room) | Take Up Carpet Over Pad | Extended Trip Charge | Amur Bay | Embossing Leveler | Planiprep PSC | No | No | Floating - Click Lock | No | No | Yes | Stair up to 42 in (Laminate or LVP) | Take Up Carpet Over Pad",
     "style": "Seagrass | Planiprep PSC | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $10.80 | $135.00 | Seagrass | Planiprep PSC | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $7.04 | $12.32 | Seagrass | Planiprep PSC | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $83.34 | $9.44 | $118.00 | $0.00 | Seagrass | Planiprep PSC | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $18.60 | $32.55 | $150.00 | Seagrass | Planiprep PSC | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $0.00 | $1,750.00 | $13.18",
     "tags": [
-      "sold_tag",
-      "google_contact"
+      "recent_tag"
     ]
   },
   {
@@ -24253,32 +24129,10 @@
     ]
   },
   {
-    "activity_id": "1-8479218349",
-    "self_gen": false,
-    "appointment": "4/23/2026 1 PM - 3 PM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Emily Cusack",
-    "phone": "4842258478",
-    "alternate_phone": "",
-    "address": "9501 Foxfield Ct Fogelsville, PA 18051",
-    "email": "egrasso129@yahoo.com",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "area": "",
-    "product_line": "",
-    "series": "",
-    "style": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
     "activity_id": "1-8480941499",
     "self_gen": false,
-    "appointment": "4/23/2026 9 AM - 11 AM",
-    "status": "Scheduled",
+    "appointment": "4/25/2026",
+    "status": "completed",
     "contract_number": "",
     "name": "Amy Gribben",
     "phone": "6093131513",
@@ -24293,14 +24147,14 @@
     "series": "",
     "style": "",
     "tags": [
-      "scheduled_tag"
+      "recent_tag"
     ]
   },
   {
     "activity_id": "1-8482029285",
     "self_gen": false,
-    "appointment": "4/24/2026 1 PM - 3 PM",
-    "status": "Sold",
+    "appointment": "4/27/2026",
+    "status": "completed",
     "contract_number": "005TAEE454",
     "name": "Kari Niess",
     "phone": "4843563149",
@@ -24315,8 +24169,7 @@
     "series": "Spotlight",
     "style": "Encore",
     "tags": [
-      "sold_tag",
-      "google_contact"
+      "recent_tag"
     ]
   },
   {
@@ -24342,28 +24195,6 @@
     ]
   },
   {
-    "activity_id": "1-8483326379",
-    "self_gen": false,
-    "appointment": "4/25/2026 1 PM - 3 PM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "Michael Bilinski",
-    "phone": "6103345227",
-    "alternate_phone": "",
-    "address": "2076 Saint Peters Rd Pottstown, PA 19465",
-    "email": "funkski14@comcast.net",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "area": "",
-    "product_line": "",
-    "series": "",
-    "style": "",
-    "tags": [
-      "scheduled_tag"
-    ]
-  },
-  {
     "activity_id": "1-8479045608",
     "self_gen": false,
     "appointment": "4/25/2026 11 AM - 1 PM",
@@ -24386,25 +24217,249 @@
     ]
   },
   {
-    "activity_id": "1-8481527449",
-    "self_gen": false,
-    "appointment": "4/25/2026 9 AM - 11 AM",
-    "status": "Scheduled",
-    "contract_number": "",
-    "name": "John Clancy",
-    "phone": "2679804015",
+    "activity_id": "1-8477506595",
+    "self_gen": true,
+    "appointment": "4/20/2026 3 PM - 5 PM",
+    "status": "Sold",
+    "contract_number": "005TAEE349",
+    "name": "Charlie Pierce",
+    "phone": "6109604488",
     "alternate_phone": "",
-    "address": "430 Terrace Dr Quakertown, PA 18951",
-    "email": "clancy4671@comcast.net",
-    "quote_option": "",
-    "is_primary": "",
-    "contract_total": "",
-    "area": "",
-    "product_line": "",
-    "series": "",
-    "style": "",
+    "address": "260 West Beech St Pottstown, PA 19464",
+    "email": "kingpierce59@gmail.com",
+    "quote_option": "Quote E",
+    "is_primary": "True",
+    "contract_total": "$5,562.23",
+    "area": "Front Patio | Rear Patio",
+    "product_line": "Carpet",
+    "series": "Courtyard",
+    "style": "Overcast",
     "tags": [
-      "scheduled_tag"
+      "sold_tag",
+      "google_contact"
+    ]
+  },
+  {
+    "activity_id": "1-8487047001",
+    "self_gen": false,
+    "appointment": "4/30/2026 11 AM - 1 PM",
+    "status": "No Quote",
+    "contract_number": "",
+    "name": "Debra Cleffi",
+    "phone": "6105706640",
+    "alternate_phone": "",
+    "address": "1580 6th St Bethlehem, PA 18020",
+    "email": "kissuhi@aol.com",
+    "quote_option": "Quote A",
+    "is_primary": "True",
+    "contract_total": "$649.75",
+    "area": "Porch",
+    "product_line": "Carpet",
+    "series": "Courtyard",
+    "style": "Springtime",
+    "tags": [
+      "no quote_tag"
+    ]
+  },
+  {
+    "activity_id": "1-8487390719",
+    "self_gen": false,
+    "appointment": "4/30/2026 11 AM - 1 PM",
+    "status": "Quoted",
+    "contract_number": "",
+    "name": "Lindsay Pier",
+    "phone": "2156827600",
+    "alternate_phone": "",
+    "address": "280 HORSHAM RD Horsham, PA 19044",
+    "email": "lindsaydavesappliance@gmail.com",
+    "quote_option": "Quote B",
+    "is_primary": "True",
+    "contract_total": "$9,346.11",
+    "area": "A Rear Hallway | B middle Hallway | Back Office | Ladies Bathroom | Locker room | Main front Office | Men\u2019s Bathroom | Parts room | Punch clock room",
+    "product_line": "Carpet",
+    "series": "Output",
+    "style": "Quantum",
+    "tags": [
+      "quoted_tag"
+    ]
+  },
+  {
+    "activity_id": "1-8486700991",
+    "self_gen": false,
+    "appointment": "4/30/2026 9 AM - 11 AM",
+    "status": "Quoted",
+    "contract_number": "",
+    "name": "Joel Duliakas",
+    "phone": "6104129979",
+    "alternate_phone": "",
+    "address": "2253 Jones Rd Pottstown, PA 19465",
+    "email": "duliakas1964@gmail.com",
+    "quote_option": "Quote E",
+    "is_primary": "True",
+    "contract_total": "$5,634.84",
+    "area": "A rear right Bedroom | B front right Bedroom | C Hallway | D hall Closet | E Den | G rear middle Bedroom | Living Room",
+    "product_line": "Carpet",
+    "series": "Spotlight",
+    "style": "Limelight",
+    "tags": [
+      "quoted_tag"
+    ]
+  },
+  {
+    "activity_id": "1-8486029309",
+    "self_gen": false,
+    "appointment": "4/29/2026 1 PM - 3 PM",
+    "status": "Quoted",
+    "contract_number": "",
+    "name": "Aejandro Prestan",
+    "phone": "4847614223",
+    "alternate_phone": "",
+    "address": "4410 Greenfield Rd Bethlehem, PA 18017",
+    "email": "bluemagic171@gmail.com",
+    "quote_option": "Quote B",
+    "is_primary": "True",
+    "contract_total": "$3,988.73",
+    "area": "A Rear right Bedroom | B front right Bedroom | C Hallway | D Bedroom | E Primary Bedroom",
+    "product_line": "Carpet",
+    "series": "Alderbrook",
+    "style": "Bixby",
+    "tags": [
+      "quoted_tag"
+    ]
+  },
+  {
+    "activity_id": "1-8484795751",
+    "self_gen": false,
+    "appointment": "5/1/2026",
+    "status": "completed",
+    "contract_number": "005TAEE566",
+    "name": "Michael Toll",
+    "phone": "2159084628",
+    "alternate_phone": "2159084628",
+    "address": "43 South Valley Forge Rd Lansdale, PA 19446",
+    "email": "ima302@gmail.com",
+    "quote_option": "Quote A",
+    "is_primary": "True",
+    "contract_total": "$3,234.32",
+    "area": "Bathroom | Family Room | Kitchen",
+    "product_line": "LVT | Carpet",
+    "series": "Options | Alderbrook",
+    "style": "Beige | Bixby",
+    "tags": [
+      "recent_tag"
+    ]
+  },
+  {
+    "activity_id": "1-8481950826",
+    "self_gen": false,
+    "appointment": "4/29/2026 9 AM - 11 AM",
+    "status": "Sold",
+    "contract_number": "005TAEE558",
+    "name": "Dan Nolan",
+    "phone": "2156033010",
+    "alternate_phone": "",
+    "address": "2200 Bridgeport Ave Pennsburg, PA 18073",
+    "email": "nolan3333@comcast.net",
+    "quote_option": "Quote F",
+    "is_primary": "True",
+    "contract_total": "$5,099.97",
+    "area": "Hallway | Primary Bedroom | Staircase",
+    "product_line": "LVP",
+    "series": "Cave Creek",
+    "style": "Morel",
+    "tags": [
+      "sold_tag",
+      "google_contact"
+    ]
+  },
+  {
+    "activity_id": "1-8488570294",
+    "self_gen": true,
+    "appointment": "5/2/2026 1 PM - 3 PM",
+    "status": "Sold",
+    "contract_number": "005TAEE654",
+    "name": "Ramel Abreu",
+    "phone": "3474201004",
+    "alternate_phone": "",
+    "address": "3000 Long Way Easton, PA 18040",
+    "email": "ramelabreu@ramirezseafood.com",
+    "quote_option": "Quote G",
+    "is_primary": "True",
+    "contract_total": "$18,437.83",
+    "area": "A front right Bedroom | B rear right Bedroom | C Hallway | D rear Hallway | E second floor Bathroom | F left front Bedroom | F Primary Bathroom | G rear right Bedroom | Rear Staircase 2 | Staircase",
+    "product_line": "Laminate",
+    "series": "Collin Creek",
+    "style": "Natural",
+    "tags": [
+      "sold_tag",
+      "google_contact"
+    ]
+  },
+  {
+    "activity_id": "1-8489137736",
+    "self_gen": false,
+    "appointment": "5/2/2026 9 AM - 11 AM",
+    "status": "Quoted",
+    "contract_number": "",
+    "name": "Mike Samad",
+    "phone": "9082168977",
+    "alternate_phone": "",
+    "address": "305 Blaze Circle New Hope, PA 18938",
+    "email": "",
+    "quote_option": "Quote D",
+    "is_primary": "True",
+    "contract_total": "$3,008.73",
+    "area": "Basement | Staircase",
+    "product_line": "Carpet",
+    "series": "Opal Lake",
+    "style": "Tangled",
+    "tags": [
+      "quoted_tag"
+    ]
+  },
+  {
+    "activity_id": "1-8486596009",
+    "self_gen": false,
+    "appointment": "5/1/2026 11 AM - 1 PM",
+    "status": "Quoted",
+    "contract_number": "",
+    "name": "Joe Lococo",
+    "phone": "6108442233",
+    "alternate_phone": "",
+    "address": "2715 Barnes Ct Allentown, PA 18103",
+    "email": "jslococo1@gmail.com",
+    "quote_option": "Quote A",
+    "is_primary": "True",
+    "contract_total": "$3,207.08",
+    "area": "Back room Basement | Front Basement | Staircase",
+    "product_line": "Carpet",
+    "series": "Spotlight",
+    "style": "Fame",
+    "tags": [
+      "quoted_tag"
+    ]
+  },
+  {
+    "activity_id": "1-8488185809",
+    "self_gen": false,
+    "appointment": "5/1/2026 9 AM - 11 AM",
+    "status": "Sold",
+    "contract_number": "005TAEE601",
+    "name": "Jeremy Kim",
+    "phone": "2679352447",
+    "alternate_phone": "",
+    "address": "4748 Bishop Cir Doylestown, PA 18902",
+    "email": "minshikim@gmail.com",
+    "quote_option": "Quote F",
+    "is_primary": "True",
+    "contract_total": "$9,688.24",
+    "area": "A front left Bedroom | B front left Bedroom | Basement | Basement Staircase 3 | Basement tv room lower | C Primary Bedroom | D Basement | Staircase",
+    "product_line": "Carpet",
+    "series": "Southcrest | Ignite",
+    "style": "Sundance | Vision",
+    "tags": [
+      "sold_tag",
+      "google_contact"
     ]
   }
 ]
