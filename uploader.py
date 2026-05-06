@@ -45,7 +45,7 @@ def map_contact_to_ghl(contact):
 
     # Add additional details to GHL custom fields
     custom_fields = []
-    for field_name in ["activity_id", "self_gen", "appointment", "quote_option", "is_primary", "contract_total", "area", "product_line", "series", "style"]:
+    for field_name in ["activity_id", "self_gen", "appointment", "contract_number", "quote_option", "is_primary", "contract_total", "area", "product_line", "series", "style"]:
         value = contact.get(field_name)
         if value is not None and value != "":
             key = "appointment_date" if field_name == "appointment" else field_name

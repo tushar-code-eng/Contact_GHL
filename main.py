@@ -575,13 +575,32 @@ def main():
         new_deduped = filter_unique_by_email_phone(raw_sales)
         log(f"🔎 Deduped to {len(new_deduped)} unique sales records from this run")
         
-        # Load accumulated records from all_records.json
-        all_records_dict = load_all_records()
-        log(f"📂 Loaded {len(all_records_dict)} accumulated records from previous runs")
+        # Check if this is a full load
+        is_full_load = os.getenv("FULL_LOAD", "false").lower() in ("1", "true", "yes")
         
-        # Merge new scraped records with accumulated records
-        all_records_dict, newly_scraped_ids = merge_new_with_accumulated(new_deduped, all_records_dict)
-        log(f"🔗 Merged with accumulated records: {len(newly_scraped_ids)} newly scraped")
+        if is_full_load:
+            # For full load, use only new scraped data, clear old accumulated records
+            all_records_dict = {}
+            for record in new_deduped:
+                email = (record.get("email") or "").strip().lower()
+                phone = re.sub(r"\D", "", record.get("phone") or "")
+                if email:
+                    key = email
+                elif phone:
+                    key = phone
+                else:
+                    continue
+                all_records_dict[key] = record
+            newly_scraped_ids = set(r.get("activity_id", "") for r in new_deduped if r.get("activity_id"))
+            log(f"🔄 FULL_LOAD enabled: Using only {len(all_records_dict)} newly scraped records (cleared old data)")
+        else:
+            # Load accumulated records from all_records.json
+            all_records_dict = load_all_records()
+            log(f"📂 Loaded {len(all_records_dict)} accumulated records from previous runs")
+            
+            # Merge new scraped records with accumulated records
+            all_records_dict, newly_scraped_ids = merge_new_with_accumulated(new_deduped, all_records_dict)
+            log(f"🔗 Merged with accumulated records: {len(newly_scraped_ids)} newly scraped")
         
         # Save updated accumulated records
         save_all_records(all_records_dict)
