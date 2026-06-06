@@ -246,7 +246,7 @@ def add_tag_field(rows):
         tags = [base_tag]
 
         # 🔥 YOUR NEW LOGIC
-        if base_tag == "sold_tag":
+        if base_tag == "sold_tag" or base_tag == "completed_tag":
             tags.append("google_contact")
 
         row["tags"] = tags  # use plural
