@@ -357,86 +357,61 @@ def save_scheduled_records(records_dict):
 
 
 def rescrape_scheduled_records():
-    """Re-scrape each scheduled record individually to get current status and detail data"""
-    from scraper import scrape_detail_parallel, scrape_all
+    """For each scheduled record, re-scrape by activity_id via the customerhistory page.
+    If status changed from 'scheduled' → promote into accumulated records for GHL sending.
+    If still 'scheduled' → keep in scheduled_records.json."""
+    from scraper import scrape_detail_parallel
 
     scheduled_records = load_scheduled_records()
     if not scheduled_records:
         log("ℹ️ No scheduled records to re-scrape")
         return
 
-    log(f"🔄 Re-scraping {len(scheduled_records)} scheduled records...")
+    log(f"🔄 Checking {len(scheduled_records)} scheduled records individually...")
 
-    # Get date range for scheduled records
-    dates = []
-    for record in scheduled_records.values():
-        apt_date = parse_appointment_date(record.get("appointment"))
-        if apt_date:
-            dates.append(apt_date)
-
-    if not dates:
-        log("⚠️ No valid dates found in scheduled records, skipping status update")
-        # Still do detail rescraping
-        dates = []
-
-    # Scrape the date range that contains all scheduled records to get current statuses
-    if dates:
-        min_date = min(dates)
-        max_date = max(dates)
-        start_date = format_query_date(min_date)
-        end_date = format_query_date(max_date)
-
-        log(f"📅 Scraping date range {start_date} to {end_date} for status updates")
-
-        try:
-            # Do a targeted scrape for the scheduled records' date range
-            status_data = scrape_all(start_date, end_date)
-            log(f"📊 Scraped {len(status_data)} records for status checking")
-
-            # Create lookup dict for status updates
-            status_lookup = {record.get('activity_id'): record for record in status_data if record.get('activity_id')}
-        except Exception as e:
-            log(f"❌ Failed to scrape for status updates: {e}")
-            status_lookup = {}
-    else:
-        status_lookup = {}
-
-    updated_records = {}
+    still_scheduled = {}
+    promoted = []
 
     for activity_id, old_record in scheduled_records.items():
         try:
-            log(f"🔍 Re-scraping scheduled record: {activity_id} ({old_record.get('name', '')})")
-
-            # Get updated status from the targeted scrape
-            current_record = status_lookup.get(activity_id)
-            if current_record:
-                # Update with current summary data (status, appointment, etc.)
-                updated_record = current_record.copy()
-                log(f"📋 Updated status to: {current_record.get('status', 'unknown')}")
-            else:
-                # Keep old record if not found in current scrape
-                updated_record = old_record.copy()
-                log(f"⚠️ Activity {activity_id} not found in current scrape, keeping old data")
-
-            # Scrape fresh detail data
+            log(f"🔍 Checking: {activity_id} ({old_record.get('name', '')})")
             detail = scrape_detail_parallel(activity_id)
-            if detail:
-                # Merge fresh detail data
-                updated_record.update(detail)
-                log(f"✅ Updated detail data for: {activity_id}")
-            else:
-                log(f"⚠️ Failed to scrape detail for: {activity_id}")
 
-            updated_records[activity_id] = updated_record
+            if not detail:
+                log(f"⚠️ No data returned for {activity_id}, keeping as scheduled")
+                still_scheduled[activity_id] = old_record
+                continue
+
+            new_status = (detail.get("status") or "").strip().lower()
+
+            # Merge fresh detail into the existing record
+            updated = old_record.copy()
+            updated.update(detail)
+
+            if new_status and new_status != "scheduled":
+                log(f"✅ Status changed to '{new_status}' for {activity_id} — promoting to GHL queue")
+                promoted.append(updated)
+            else:
+                log(f"⏸️  Still scheduled: {activity_id}")
+                still_scheduled[activity_id] = updated
 
         except Exception as e:
-            log(f"❌ Error re-scraping {activity_id}: {e}")
-            # Keep the old record on error
-            updated_records[activity_id] = old_record
+            log(f"❌ Error checking {activity_id}: {e}")
+            still_scheduled[activity_id] = old_record
 
-    # Overwrite the scheduled records file with updated data
-    save_scheduled_records(updated_records)
-    log(f"💾 Overwrote scheduled_records.json with {len(updated_records)} updated records")
+    save_scheduled_records(still_scheduled)
+    log(f"💾 {len(still_scheduled)} records remain scheduled, {len(promoted)} promoted")
+
+    if promoted:
+        all_records_dict = load_all_records()
+        for record in promoted:
+            email = (record.get("email") or "").strip().lower()
+            phone = re.sub(r"\D", "", record.get("phone") or "")
+            key = email if email else phone
+            if key:
+                all_records_dict[key] = record
+        save_all_records(all_records_dict)
+        log(f"✅ Added {len(promoted)} promoted records to accumulated records")
 
 
 def merge_new_with_accumulated(new_records, all_records_dict):
