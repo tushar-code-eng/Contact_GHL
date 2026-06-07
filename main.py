@@ -233,24 +233,12 @@ def filter_unique_by_email_phone(rows):
 
 
 def add_tag_field(rows):
-    """Add tag field based on status. Supports multiple tags."""
+    """Add tag field based on status: lowercase, spaces → underscores, _tag suffix."""
     for row in rows:
-        # Skip if tag already exists (from installation merge)
-        if row.get("tag"):
-            base_tag = row["tag"]
-        else:
-            status = (row.get("status") or "").strip().lower()
-            base_tag = f"{status}_tag" if status else "unknown_tag"
-
-        # Always convert to list
-        tags = [base_tag]
-
-        # 🔥 YOUR NEW LOGIC
-        if base_tag == "sold_tag" or base_tag == "completed_tag":
-            tags.append("google_contact")
-
-        row["tags"] = tags  # use plural
-        row.pop("tag", None)  # optional: remove old single tag
+        status = (row.get("status") or "").strip().lower().replace(" ", "_")
+        tag = f"{status}_tag" if status else "unknown_tag"
+        row["tags"] = [tag]
+        row.pop("tag", None)
 
     return rows
 
@@ -727,12 +715,6 @@ def main():
         # This also allows previously deferred contacts to be retried.
         for row in final_data:
             activity_id = row.get("activity_id", "").strip()
-            status = row.get("status", "").strip().lower()
-            
-            # Skip scheduled records - they are not sent until status changes
-            if status == "scheduled":
-                log(f"⏸️  Skipping scheduled record: {row.get('name')} ({activity_id})")
-                continue
             
             has_changed = has_record_changed(activity_id, row, processed_hashes)
 
