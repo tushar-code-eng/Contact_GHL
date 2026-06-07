@@ -550,6 +550,10 @@ def main():
     processed_hashes = load_processed_hashes()
     new_processed_hashes = dict(processed_hashes)
 
+    # Deferred date saves — only written after the whole pipeline succeeds
+    pending_end_date = None
+    pending_install_date = None
+
     # ============================================
     # STEP 1: SCRAPE & DEDUPE SALES DATA (URL 1)
     # ============================================
@@ -569,7 +573,7 @@ def main():
         raw_sales = scrape_all(start_date, end_date)
         log(f"📊 Scraped {len(raw_sales)} rows from URL 1")
         save_backup(raw_sales)
-        save_last_date(end_date)
+        pending_end_date = end_date
         
         # Deduplicate new scraped data
         new_deduped = filter_unique_by_email_phone(raw_sales)
@@ -655,8 +659,7 @@ def main():
     log(f"🔗 Merged {len(installations_dict)} installations with {len(sales_data)} sales records")
     
     if max_install_date:
-        save_installation_last_date(max_install_date)
-        log(f"📅 Saved max installation date: {max_install_date}")
+        pending_install_date = max_install_date
 
     # ============================================
     # STEP 4: ADD TAGS & FINAL DATA
@@ -773,6 +776,13 @@ def main():
             log("ℹ️ No new or updated contacts to send to GHL")
     else:
         log("⏸️ GHL push is disabled. No contacts were sent.")
+
+    # Only persist date checkpoints now that the full pipeline succeeded
+    if pending_end_date:
+        save_last_date(pending_end_date)
+    if pending_install_date:
+        save_installation_last_date(pending_install_date)
+        log(f"📅 Saved max installation date: {pending_install_date}")
 
     cleanup_old_files()
 
