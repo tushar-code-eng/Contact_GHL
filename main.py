@@ -276,7 +276,7 @@ def build_date_range():
         saved_end_date = load_last_date()
         if saved_end_date:
             anchor = parse_appointment_date(saved_end_date) or datetime.now()
-            start_date = format_query_date(anchor - timedelta(days=60))
+            start_date = format_query_date(anchor - timedelta(days=90))
         else:
             start_date = "1/1/2024"
 
