@@ -270,11 +270,15 @@ def cleanup_old_files():
 
 
 def build_date_range():
-    saved_end_date = load_last_date()
-    if os.getenv("FULL_LOAD", "false").lower() in ("1", "true", "yes") or not saved_end_date:
+    if os.getenv("FULL_LOAD", "false").lower() in ("1", "true", "yes"):
         start_date = "1/1/2024"
     else:
-        start_date = saved_end_date
+        saved_end_date = load_last_date()
+        if saved_end_date:
+            anchor = parse_appointment_date(saved_end_date) or datetime.now()
+            start_date = format_query_date(anchor - timedelta(days=60))
+        else:
+            start_date = "1/1/2024"
 
     end_date = format_query_date(datetime.now())
     return start_date, end_date
