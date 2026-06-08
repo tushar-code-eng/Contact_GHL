@@ -125,17 +125,19 @@ def scrape_detail(page, activity_id):
         () => {
             function clean(v){ return (v||'').trim(); }
 
-            // Email from definition list
-            function getEmail(){
+            // Extract a field from definition list by label keyword
+            function getDlField(keyword){
                 const rows = Array.from(document.querySelectorAll('dl.row'));
                 for(const row of rows){
                     const label = row.querySelector('dt')?.innerText?.toLowerCase() || '';
-                    if(label.includes('email')){
+                    if(label.includes(keyword)){
                         return clean(row.querySelector('dd')?.innerText);
                     }
                 }
                 return '';
             }
+
+            function getEmail(){ return getDlField('email'); }
 
             function getCellValue(td){
                 if(!td) return '';
@@ -239,6 +241,7 @@ def scrape_detail(page, activity_id):
 
             return {
                 email: getEmail(),
+                status: getDlField('status'),
                 quote_option: primaryQuote.quote_option,
                 is_primary: primaryQuote.is_primary,
                 contract_total: primaryQuote.contract_total,
